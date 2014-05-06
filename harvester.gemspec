@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["pls@6x9.ca"]
   spec.summary       = %q{Library and command line utility to interact with Harvest Time Tracking}
   spec.description   = %q{}
-  spec.homepage      = ""
+  spec.homepage      = "http://github.com/p-l/harvester"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
