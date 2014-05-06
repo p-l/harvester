@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'harvester'
+require 'harvester/pretty_errors'
+require "harvester/cli"
+
+# Exit cleanly from an early interrupt
+Signal.trap("INT") { exit 1 }
+
+# Start the command line interpreter
+module Harvester
+  Harvester.pretty_errors do
+    CLI.start(ARGV)
+  end
+end
