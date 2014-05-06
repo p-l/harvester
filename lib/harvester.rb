@@ -1,0 +1,10 @@
+require "harvester/version"
+require "harvester/errors"
+require "harvester/client"
+require 'harvester/api/base'
+require 'harvester/api/clients'
+require 'harvester/api/projects'
+require 'harvester/api/tasks'
+require 'harvester/models/client'
+require 'harvester/models/project'
+require 'harvester/models/task'
