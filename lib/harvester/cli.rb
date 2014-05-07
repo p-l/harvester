@@ -9,8 +9,13 @@ module Harvester
     class_option :password, :aliases => "-p", :desc => "Harvest password", :type => :string
     class_option :day_length, :desc => "Length of a day", :type => :numeric
     class_option :days, :desc => "Use days as units", :type => :boolean
+    class_option :from, :desc => "From date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
+    class_option :to, :desc => "To date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
 
 
+    #---------------------------------------------------------------------------
+    # find
+    #---------------------------------------------------------------------------
     desc "find SEARCH_STRING", "Search Harvest for SEARCH_STRING"
     option :search_string, :description => "Specify a search string", :yeal => :string
     def find(name)
@@ -33,10 +38,14 @@ module Harvester
       end
     end # find
 
-
-    desc "summarize PROJECT", "Summarize taks in PROJECT"
+    #---------------------------------------------------------------------------
+    # summarize
+    #---------------------------------------------------------------------------
+    desc "summarize PROJECT", "Summarize tasks in PROJECT"
     option :name, :desc => "Specify a name", :yeal => :string
     def summarize(name)
+      from_date = date_from_formated_string(options[:from])
+      to_date = date_from_formated_string(options[:to])
       client = Client.new(options[:domain],options[:username],options[:password])
       puts "Searching for project named: #{name}."
       projects = client.projects.by_name(name)
@@ -44,9 +53,11 @@ module Harvester
         puts " "
         puts "--------------------------------------------------------------------------"
         puts "#{p.name} (#{p.client.name})"
+        puts "from: #{options[:from]}" if(options[:from])
+        puts "to: #{options[:to]}" if(options[:to])
         puts "--------------------------------------------------------------------------"
 
-        tasks = p.summary()
+        tasks = p.summary(from_date,to_date)
 
         # Generate summary
         total = 0
@@ -65,6 +76,19 @@ module Harvester
         puts "Total : #{total.round(2)} #{unit}"
       end
     end # summarize
+
+    #---------------------------------------------------------------------------
+    # Utilities
+    #---------------------------------------------------------------------------
+    no_commands do
+      def date_from_formated_string(date_string=nil)
+        return nil if date_string == nil
+        Date.strptime(date_string,"%Y-%m-%d")
+      rescue Exception => e
+        puts e.message
+        puts "Date was: #{date_string}"
+      end
+    end # no_commands
 
   end # CLI
 end # Harvester
