@@ -49,7 +49,7 @@ module Harvester
       client = Client.new(options[:domain],options[:username],options[:password])
       puts "Searching for project named: #{name}."
       projects = client.projects.by_name(name)
-      projects.each do |p|
+      projects.sort_by().each do |p|
         puts " "
         puts "--------------------------------------------------------------------------"
         puts "#{p.name} (#{p.client.name})"
@@ -68,11 +68,20 @@ module Harvester
           divider = (options[:day_length] ? options[:day_length] : 8)
         end
 
+        # Enrich tasks (with name).
+        named_tasks = {}
         tasks.each do |task_id, hours|
           task = client.tasks.by_id(task_id)
-          puts "#{task.name} : #{(hours/divider).round(2)} #{unit}"
+          named_tasks[task.name] = hours
           total += (hours/divider)
         end
+
+        # Output tasks
+        named_tasks.sort_by{|k,v| k}.each do |task_name, hours|
+          puts "#{task_name} : #{(hours/divider).round(2)} #{unit}"
+        end
+
+
         puts "Total : #{total.round(2)} #{unit}"
       end
     end # summarize
