@@ -7,10 +7,6 @@ module Harvester
     class_option :domain, :aliases => "-d", :desc => "Harvest domain", :type => :string
     class_option :username, :aliases => "-u", :desc => "Harvest username", :type => :string
     class_option :password, :aliases => "-p", :desc => "Harvest password", :type => :string
-    class_option :day_length, :desc => "Length of a day", :type => :numeric
-    class_option :days, :desc => "Use days as units", :type => :boolean
-    class_option :from, :desc => "From date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
-    class_option :to, :desc => "To date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
 
 
     #---------------------------------------------------------------------------
@@ -43,6 +39,10 @@ module Harvester
     #---------------------------------------------------------------------------
     desc "summarize PROJECT", "Summarize tasks in PROJECT"
     option :name, :desc => "Specify a name", :yeal => :string
+    option :day_length, :desc => "Length of a day", :type => :numeric
+    option :days, :desc => "Use days as units", :type => :boolean
+    option :from, :desc => "From date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
+    option :to, :desc => "To date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
     def summarize(name)
       from_date = date_from_formated_string(options[:from])
       to_date = date_from_formated_string(options[:to])
@@ -76,11 +76,10 @@ module Harvester
           total += (hours/divider)
         end
 
-        # Output tasks
+        # Output as human readable text
         named_tasks.sort_by{|k,v| k}.each do |task_name, hours|
           puts "#{task_name} : #{(hours/divider).round(2)} #{unit}"
         end
-
 
         puts "Total : #{total.round(2)} #{unit}"
       end
