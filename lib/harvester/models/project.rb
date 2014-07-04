@@ -25,7 +25,7 @@ module Harvester
         @client ||= API::Clients.new(@harvest).by_id(@client_id)
       end
 
-      def summary(from=nil, to=nil)
+      def summary(from=nil, to=nil, use_ids=false)
         from ||= Time.utc(1970, 01, 01)
         to ||= Time.now.utc
 
@@ -39,7 +39,18 @@ module Harvester
           summary_by_taskid[e.task_id] += e.hours
         end
 
-        return summary_by_taskid
+        # return task by id
+        return summary_by_taskid if (use_ids)
+
+        # go the extra mile and get task names for task ids
+        summary_by_task_name = {}
+        summary_by_taskid.each do |task_id, hours|
+          task = API::Tasks.new(@harvest).by_id(task_id)
+          summary_by_task_name[task.name] = hours
+        end
+
+        # return tasks by name
+        return summary_by_task_name.sort_by{|k,v| k}
       end
 
     end # Project
