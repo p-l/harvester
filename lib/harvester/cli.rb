@@ -43,6 +43,7 @@ module Harvester
     option :days, :desc => "Use days as units", :type => :boolean
     option :from, :desc => "From date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
     option :to, :desc => "To date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
+    option :csv, :desc => "Output summary in CSV format", :yeal => :boolean
     def summarize(name)
       from_date = date_from_formated_string(options[:from])
       to_date = date_from_formated_string(options[:to])
@@ -56,7 +57,7 @@ module Harvester
         project_summaries[p] = p.summary(from_date,to_date)
       end
 
-      # Generate summary
+      # Setup report format
       unit = "hours"
       divider = 1
       if(options[:days])
