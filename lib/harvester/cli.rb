@@ -1,5 +1,6 @@
 require "thor"
 require "harvester/client"
+require 'csv'
 
 module Harvester
   class CLI < Thor
@@ -66,8 +67,7 @@ module Harvester
       end
 
       if (options[:csv])
-        puts "Not implemented yet :("
-        #summary_as_csv(project_summaries,from_date,to_date,unit,divider)
+        summary_as_csv(project_summaries,from_date,to_date,unit,divider)
       else
         summary_as_text(project_summaries,from_date,to_date,unit,divider)
       end
@@ -85,10 +85,10 @@ module Harvester
       rescue Exception => e
         puts e.message
         puts "Date was: #{date_string}"
-      end
+      end #date_from_formated_string
 
       def summary_as_text(project_summaries,from=nil,to=nil,unit="hours",divider=1)
-        project_summaries.sort_by().each do |p,tasks|
+        project_summaries.to_h.each do |p,tasks|
           puts " "
           puts "--------------------------------------------------------------------------"
           puts "#{p.name} (#{p.client.name})"
@@ -98,14 +98,55 @@ module Harvester
 
           # Output as human readable text
           total = 0
-          tasks.each do |task_name, hours|
+          tasks.sort_by{|k,v| k.downcase}.each do |task_name, hours|
             puts "#{task_name} : #{(hours/divider).round(2)} #{unit}"
             total += (hours/divider)
-          end
+          end # tasks.each
 
           puts "Total : #{total.round(2)} #{unit}"
-        end
-      end
+        end # project_summaries.sort_by().each
+      end # summary_as_text
+
+      def summary_as_csv(project_summaries,from=nil,to=nil,unit="hours",divider=1)
+        # Get the column lookup
+        all_tasks_name = []
+        project_summaries.each do |p,tasks|
+          tasks.each do |task_name, hours|
+            all_tasks_name << task_name
+          end
+        end # project_summaries.each
+
+        task_columns = all_tasks_name.uniq.sort
+
+        csv_content = CSV.generate do |csv|
+          # Header
+          header = [ "Project Name", "Client Name" ]
+          task_columns.each { |task_name| header << task_name }
+          header << "Total"
+          csv << header
+
+          # Create project row
+          project_summaries.each do |p,project_tasks|
+            total = 0
+            project_row = []
+            project_row << p.name
+            project_row << p.client.name
+
+            task_columns.each do |task_name,hours|
+              # default to 0 if not in the hashmap
+              task_value = project_tasks[task_name] ? (project_tasks[task_name]/divider).round(2) : 0
+              project_row << task_value
+              total += task_value
+            end # task_columns.each
+
+            project_row << total
+            csv << project_row
+
+          end # project_summaries.each
+        end # CSV.generate
+
+        puts csv_content
+      end #summary_as_csv
 
     end # no_commands
   end # CLI

@@ -50,7 +50,7 @@ module Harvester
         end
 
         # return tasks by name
-        return summary_by_task_name.sort_by{|k,v| k}
+        return summary_by_task_name
       end
 
     end # Project
