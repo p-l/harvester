@@ -6,9 +6,22 @@ module Harvester
         make_projects(@harvest.projects.all)
       end
 
+      def active
+        projects =  @harvest.projects.all.select{ |p| p.active }
+        make_projects(projects)
+      end
+
       # Returns only matching project
-      def by_name(project_name)
-        projects =  @harvest.projects.all.select{ |p| p.name.downcase.include?(project_name.downcase) }
+      def by_name(project_name,options={})
+        all_projects = not(options[:inactive]) ? self.active : self.all
+        projects =  all_projects.select{ |p| p.name.downcase.include?(project_name.downcase).equal?(!options[:exclude]) }
+
+        make_projects(projects)
+      end
+
+      def by_code(project_code,options={})
+        all_projects = not(options[:inactive]) ? self.active : self.all
+        projects =  all_projects.select{ |p| p.code.downcase.include?(project_code.downcase).equal?(!options[:exclude]) }
 
         make_projects(projects)
       end
