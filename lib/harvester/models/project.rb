@@ -11,6 +11,7 @@ module Harvester
         @client_id = project_obj.client_id
         @billabale = project_obj.billable?
         @active = project_obj.active?
+        @code = project_obj.code
       end
 
       def billable?
@@ -23,6 +24,10 @@ module Harvester
 
       def client
         @client ||= API::Clients.new(@harvest).by_id(@client_id)
+      end
+
+      def code
+        @code
       end
 
       def summary(from=nil, to=nil, use_ids=false)
