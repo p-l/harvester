@@ -2,11 +2,13 @@ module Harvester
   module API
     class Projects < Base
 
-      def by_name(project_name)
-        all_projects = @harvest.projects.all
+      def all
+        make_projects(@harvest.projects.all)
+      end
 
-        # Returns only matching project
-        projects = all_projects.select{ |p| p.name.downcase.include?(project_name.downcase) }
+      # Returns only matching project
+      def by_name(project_name)
+        projects =  @harvest.projects.all.select{ |p| p.name.downcase.include?(project_name.downcase) }
 
         make_projects(projects)
       end
