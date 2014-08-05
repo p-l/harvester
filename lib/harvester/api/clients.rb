@@ -2,11 +2,15 @@ module Harvester
   module API
     class Clients < Base
 
-      def by_name(client_name)
-        all_clients = @harvest.clients.all
 
-        # Returns only matching project
-        clients = all_clients.select{ |c| c.name.downcase.include?(client_name.downcase) }
+      # Return all projects
+      def all()
+        make_clients(@harvest.clients.all)
+      end
+
+      # Returns only matching project
+      def by_name(client_name)
+        clients = @harvest.clients.all.select{ |c| c.name.downcase.include?(client_name.downcase) }
 
         make_clients(clients)
       end
