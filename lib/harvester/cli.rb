@@ -30,7 +30,7 @@ module Harvester
       clients.each do |c|
         puts "#{c.name} [id:#{c.id}]"
         c.projects.each do |p|
-          puts "  > #{p.name} [id:#{p.id}]"
+          puts "  > #{p.code}: #{p.name} [id:#{p.id}]"
         end
       end
     end # find
@@ -52,7 +52,6 @@ module Harvester
       from_date = date_from_formated_string(options[:from])
       to_date = date_from_formated_string(options[:to])
       client = Client.new(options[:domain],options[:username],options[:password])
-
       if (options[:by_name])
         $stderr.puts "Searching projets by name: \"#{options[:by_name]}\""
         harvested_projects = client.projects.by_name(options[:by_name],options)
