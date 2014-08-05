@@ -39,21 +39,26 @@ module Harvester
     # summarize
     #---------------------------------------------------------------------------
     desc "summarize PROJECT", "Summarize tasks in PROJECT"
-    option :name, :desc => "Specify a name", :yeal => :string
+    option :search, :desc => "Summarize only project matching string", :yeal => :string
     option :day_length, :desc => "Length of a day", :type => :numeric
     option :days, :desc => "Use days as units", :type => :boolean
     option :from, :desc => "From date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
     option :to, :desc => "To date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
     option :csv, :desc => "Output summary in CSV format", :yeal => :boolean
-    def summarize(name)
+    def summarize()
       from_date = date_from_formated_string(options[:from])
       to_date = date_from_formated_string(options[:to])
       client = Client.new(options[:domain],options[:username],options[:password])
-      puts "Searching for project named: '#{name}' ..."
-      harvested_projects = client.projects.by_name(name)
+      unless (options[:search])
+        harvested_projects = client.projects.all
+      else
+        $stderr.puts "Searching projets for: \"#{options[:search]}\""
+        harvested_projects = client.projects.by_name(options[:search])
+      end
 
       project_summaries = {}
 
+      $stderr.puts "Gathering project information... This may take a while."
       harvested_projects.each do |p|
         project_summaries[p] = p.summary(from_date,to_date)
       end
