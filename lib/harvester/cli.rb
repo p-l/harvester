@@ -39,23 +39,29 @@ module Harvester
     # summarize
     #---------------------------------------------------------------------------
     desc "summarize PROJECT", "Summarize tasks in PROJECT"
-    option :search, :desc => "Summarize only project matching string", :yeal => :string
-    option :day_length, :desc => "Length of a day", :type => :numeric
-    option :days, :desc => "Use days as units", :type => :boolean
+    option :by_name, :desc => "Summarize only project matching string", :type => :string
+    option :by_code, :desc => "Summarize only project with project code matching", :type => :string
+    option :exclude, :desc => "Return only projects that don't match --by_name or --by_code", :type => :boolean, :default => false
+    option :inactive, :desc => "Include archived projects", :type => :boolean, :default => false
+    option :day_length, :desc => "Length of a day", :type => :numeric, :default => 8
+    option :days, :desc => "Use days as units", :type => :boolean, :default => false
     option :from, :desc => "From date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
     option :to, :desc => "To date in format YYYY-MM-DD (e.g. 2014-01-31)", :yeal => :string
-    option :csv, :desc => "Output summary in CSV format", :yeal => :boolean
+    option :csv, :desc => "Output summary in CSV format", :yeal => :boolean, :default => false
     def summarize()
       from_date = date_from_formated_string(options[:from])
       to_date = date_from_formated_string(options[:to])
       client = Client.new(options[:domain],options[:username],options[:password])
-      unless (options[:search])
-        harvested_projects = client.projects.all
-      else
-        $stderr.puts "Searching projets for: \"#{options[:search]}\""
-        harvested_projects = client.projects.by_name(options[:search])
-      end
 
+      if (options[:by_name])
+        $stderr.puts "Searching projets by name: \"#{options[:by_name]}\""
+        harvested_projects = client.projects.by_name(options[:by_name],options)
+      elsif (options[:by_code])
+        $stderr.puts "Searching projets by code: \"#{options[:by_code]}\""
+        harvested_projects = client.projects.by_code(options[:by_code],options)
+      else
+        harvested_projects = client.projects.active
+      end
       project_summaries = {}
 
       $stderr.puts "Gathering project information... This may take a while."
@@ -96,7 +102,7 @@ module Harvester
         project_summaries.to_h.each do |p,tasks|
           puts " "
           puts "--------------------------------------------------------------------------"
-          puts "#{p.name} (#{p.client.name})"
+          puts "#{p.code}: #{p.name} (#{p.client.name})"
           puts "from: #{options[:from]}" if(options[:from])
           puts "to: #{options[:to]}" if(options[:to])
           puts "--------------------------------------------------------------------------"
@@ -125,7 +131,7 @@ module Harvester
 
         csv_content = CSV.generate do |csv|
           # Header
-          header = [ "Project Name", "Client Name" ]
+          header = [ "Project Code", "Project Name", "Client Name" ]
           task_columns.each { |task_name| header << task_name }
           header << "Total"
           csv << header
@@ -134,6 +140,7 @@ module Harvester
           project_summaries.each do |p,project_tasks|
             total = 0
             project_row = []
+            project_row << p.code
             project_row << p.name
             project_row << p.client.name
 
